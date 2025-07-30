@@ -10,6 +10,7 @@ log = get_logger("myapp")
 TARGET_SUFFIXES = (
     ".$ea.user.mtime",
     ".$ea.user.orictime",
+    ".$ea.user.redundancy",
 )
 
 def _should_delete(filename: str) -> bool:
