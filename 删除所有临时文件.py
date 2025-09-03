@@ -9,8 +9,10 @@ log = get_logger("myapp")
 # 临时文件后缀列表
 TARGET_SUFFIXES = (
     ".$ea.user.mtime",
+    ".$ea.user.offset",
     ".$ea.user.orictime",
     ".$ea.user.redundancy",
+    ".tmp",
 )
 
 def _should_delete(filename: str) -> bool:
@@ -55,6 +57,36 @@ def clean_and_list_files(root_path: str) -> List[str]:
     return sorted(remaining_files)
 
 
+def clean_pre_files(root_path: str) -> List[str]:
+    """
+    删除 root_path 及其子目录下所有以 '.pre.' 开头的文件，
+    返回删除后剩余文件的绝对路径列表（按字典序）。
+    """
+    if not os.path.isdir(root_path):
+        raise ValueError(f"路径不存在或不是目录: {root_path}")
+
+    remaining_files = []
+    deleted_count = 0
+
+    for dirpath, _, filenames in os.walk(root_path):
+        for fname in filenames:
+            full_path = os.path.abspath(os.path.join(dirpath, fname))
+
+            if fname.startswith(".pre."):
+                try:
+                    os.remove(full_path)
+                    deleted_count += 1
+                    print(f"[DELETED] {full_path}")
+                except Exception as e:
+                    print(f"[ERROR] 无法删除 {full_path}: {e}")
+            else:
+                remaining_files.append(full_path)
+
+    print(f"\n扫描完成，共删除 {deleted_count} 个文件，剩余 {len(remaining_files)} 个文件")
+    return sorted(remaining_files)
+
+
 if __name__ == "__main__":
     path = r"E:\恢复"
     file_list = clean_and_list_files(path)
+    file_list = clean_pre_files(path)

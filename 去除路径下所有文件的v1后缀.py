@@ -1,5 +1,6 @@
 import os
 import time
+import errno
 
 from utils.logger_config import get_logger
 
@@ -47,8 +48,13 @@ def process_path(input_path):
                     os.rename(file_path, new_path)
                     log.info(f"重命名: {file_path} -> {new_path}")
                     renamed_count += 1
-                except Exception as e:
+                except OSError as e:
                     log.info(f"重命名失败: {file_path} -> {new_path}, 错误: {e}")
+                    if e.winerror == 183:
+                        os.remove(file_path)
+                        log.info(f"删除文件: {file_path}")
+                    else:
+                        log.info(f"发生其他错误：{e}")
 
     log.info(f"\n处理完成！共重命名 {renamed_count} 个文件")
 
